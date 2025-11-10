@@ -1,0 +1,80 @@
+name: Deploy Frontend & Backend to GCP
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+  id-token: write  # required for workload identity federation in set-up gcloud action
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: us-central1
+  BUCKET: web_restaurent
+  SUPABASE_URL: https://gksmmsjwvlmndmixxfzb.supabase.co
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Build React app
+        run: |
+          npm ci
+          npm run build
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up gcloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+
+      - name: Upload static site to Cloud Storage bucket
+        run: |
+          gsutil -m rsync -d -r dist gs://${{ env.BUCKET }}
+
+  backend:
+    needs: frontend
+    runs-on: ubuntu-latest
+    env:
+      IMAGE: gcr.io/${{ secrets.GCP_PROJECT_ID }}/edge-fns
+      SERVICE: edge-fns
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up gcloud SDK & Docker
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+          install_components: "gke-gcloud-auth-plugin"
+
+      - name: Build and push container image (Cloud Build)
+        run: |
+          gcloud builds submit --tag $IMAGE .
+
+      - name: Deploy container to Cloud Run
+        run: |
+          gcloud run deploy $SERVICE \
+            --image $IMAGE \
+            --platform managed \
+            --region ${{ env.REGION }} \
+            --allow-unauthenticated \
+            --quiet \
+            --set-env-vars SUPABASE_URL=${{ env.SUPABASE_URL }},\
+SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }},\
+STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}
