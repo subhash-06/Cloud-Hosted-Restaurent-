@@ -65,7 +65,7 @@ jobs:
 
       - name: Build and push container image (Cloud Build)
         run: |
-          gcloud builds submit --tag $IMAGE --no-stream .
+          gcloud builds submit --tag $IMAGE --async .
 
       - name: Deploy container to Cloud Run
         run: |
