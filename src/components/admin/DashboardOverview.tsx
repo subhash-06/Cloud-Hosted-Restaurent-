@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DollarSign, ShoppingCart, Users, AlertTriangle, Mail, MessageSquare } from 'lucide-react';
+import { ShoppingCart, Users, AlertTriangle, Mail, MessageSquare, IndianRupee } from 'lucide-react';
 import { useAdminStats } from '@/hooks/useAdminStats';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -15,8 +15,8 @@ export const DashboardOverview = () => {
     },
     {
       title: 'Total Revenue',
-      value: `$${stats.totalRevenue.toFixed(2)}`,
-      icon: DollarSign,
+      value: `₹${stats.totalRevenue.toFixed(2)}`,
+      icon: IndianRupee,
       color: 'text-green-600',
     },
     {
