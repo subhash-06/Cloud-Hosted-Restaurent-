@@ -75,6 +75,4 @@ jobs:
             --region ${{ env.REGION }} \
             --allow-unauthenticated \
             --quiet \
-            --set-env-vars SUPABASE_URL=${{ env.SUPABASE_URL }},\
-SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }},\
-STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}
+            --set-env-vars "SUPABASE_URL=${{ env.SUPABASE_URL }},SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }},STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}"
