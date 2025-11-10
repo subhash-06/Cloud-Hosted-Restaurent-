@@ -5,14 +5,23 @@ const routes: Record<string, Handler> = {};
 
 for await (const entry of Deno.readDir("./supabase/functions")) {
   if (entry.isDirectory) {
-    const mod = await import(`./supabase/functions/${entry.name}/index.ts`);
-    routes[`/${entry.name}`] = (mod.default ?? mod) as Handler;
+    try {
+      const path = `./supabase/functions/${entry.name}/index.ts`;
+      const mod = await import(path);
+      routes[`/${entry.name}`] = (mod.default ?? mod) as Handler;
+    } catch (err) {
+      console.error(`Failed to load function ${entry.name}:`, err);
+    }
   }
 }
+
+console.log("Edge functions loaded:", Object.keys(routes));
+const port = Number(Deno.env.get("PORT") ?? 8080);
+console.log(`Listening on port ${port}...`);
 
 serve((req: Request) => {
   const url = new URL(req.url);
   const path = url.pathname.replace(/\/$/, "");
   const handler = routes[path];
   return handler ? handler(req) : new Response("Not Found", { status: 404 });
-}, { port: Number(Deno.env.get("PORT") ?? 8080) });
+}, { port });
