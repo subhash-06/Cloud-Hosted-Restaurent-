@@ -8,8 +8,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from '@/hooks/use-toast';
-import { Plus, Unlock, Lock, Search } from 'lucide-react';
+import { Plus, Unlock, Lock, Search, RefreshCw } from 'lucide-react';
 import { format } from 'date-fns';
+
 
 export const BlockedIPs = () => {
   const [blockedIPs, setBlockedIPs] = useState([]);
@@ -24,7 +25,8 @@ export const BlockedIPs = () => {
   const [loading, setLoading] = useState(true);
 
   // 1. FETCH ALL DATA
-  const fetchBlockedIPs = async () => {
+  // Added isManual flag to only show toast on manual refresh
+  const fetchBlockedIPs = async (isManual = false) => {
     setLoading(true);
     const { data, error } = await supabase
       .from('blocked_ips')
@@ -33,9 +35,15 @@ export const BlockedIPs = () => {
 
     if (error) {
       console.error("Error fetching blocked IPs:", error);
-      toast({ title: 'Error fetching data', description: error.message, variant: 'destructive' });
+      // Don't show toast for auth errors in preview to keep UI clean
+      if (!error.message.includes("JWT")) {
+          toast({ title: 'Error fetching data', description: error.message, variant: 'destructive' });
+      }
     } else {
       setBlockedIPs(data || []);
+      if (isManual) {
+        toast({ title: 'Refreshed', description: 'Blocked IPs list updated.' });
+      }
     }
     setLoading(false);
   };
@@ -81,7 +89,7 @@ export const BlockedIPs = () => {
       setNewIP('');
       setReason('');
       setIsDialogOpen(false);
-      fetchBlockedIPs();
+      fetchBlockedIPs(true); // Auto-refresh after block
     }
   };
 
@@ -113,6 +121,18 @@ export const BlockedIPs = () => {
           <CardTitle>Blocked IPs Management</CardTitle>
           
           <div className="flex items-center gap-2 w-full sm:w-auto">
+            {/* --- REFRESH BUTTON --- */}
+            <Button 
+              variant="outline" 
+              size="icon" 
+              onClick={() => fetchBlockedIPs(true)} 
+              disabled={loading}
+              title="Refresh Data"
+              className="shrink-0"
+            >
+              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            </Button>
+
             <div className="relative flex-1 sm:w-64">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
