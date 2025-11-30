@@ -3,15 +3,19 @@ import { DashboardOverview } from '@/components/admin/DashboardOverview';
 import { OrderKanban } from '@/components/admin/OrderKanban';
 import { SecurityAlerts } from '@/components/admin/SecurityAlerts';
 import { BlockedIPs } from '@/components/admin/BlockedIPs';
-import { LogHistory } from '@/components/admin/LogHistory';
 import { AdminSettings } from '@/components/admin/AdminSettings';
 import { PinAuth } from '@/components/admin/PinAuth';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { useNavigate } from 'react-router-dom';
 import { Shield } from 'lucide-react';
 
 const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState('overview');
+  const navigate = useNavigate();
+  // Determine initial tab from query string (e.g. /admin?tab=alerts)
+  const searchParams = new URLSearchParams(window.location.search);
+  const initialTab = searchParams.get('tab') ?? 'overview';
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [isPinVerified, setIsPinVerified] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -57,11 +61,17 @@ const AdminDashboard = () => {
           </header>
 
           <main className="flex-1 p-6 overflow-auto">
-            {activeTab === 'overview' && <DashboardOverview />}
+            {activeTab === 'overview' && (
+              <DashboardOverview
+                onNavigate={(tab:string) => {
+                  setActiveTab(tab);
+                  navigate(`/admin?tab=${tab}`);
+                }}
+              />
+            )}
             {activeTab === 'orders' && <OrderKanban />}
             {activeTab === 'alerts' && <SecurityAlerts />}
             {activeTab === 'blocked' && <BlockedIPs />}
-            {activeTab === 'logs' && <LogHistory />}
             {activeTab === 'settings' && <AdminSettings />}
           </main>
         </div>

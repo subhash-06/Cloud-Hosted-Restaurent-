@@ -15,7 +15,6 @@ const navigationItems = [
   { title: 'Orders', value: 'orders', icon: ShoppingCart },
   { title: 'Alerts', value: 'alerts', icon: AlertTriangle },
   { title: 'Blocked IPs', value: 'blocked', icon: Ban },
-  { title: 'Logs', value: 'logs', icon: FileText },
   { title: 'Settings', value: 'settings', icon: Settings },
 ];
 

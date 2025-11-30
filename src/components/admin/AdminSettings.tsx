@@ -70,7 +70,7 @@ export const AdminSettings = () => {
         <CardContent className="space-y-4">
           <div className="text-sm text-muted-foreground space-y-2">
             <p>
-              <strong>Note:</strong> API keys and secrets are managed securely through Lovable Cloud backend secrets.
+              <strong>Note:</strong> API keys and secrets are managed securely through  Cloud backend secrets.
             </p>
             <p>
               These credentials are encrypted and only accessible to backend functions, never exposed to the client.
